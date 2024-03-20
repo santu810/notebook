@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 const JWT_SEC = 'hsgnwsttet63bdjd';
+const fetchuser=require('../middleware/fetchuser.js');
 
 
 //signup endpoint
@@ -43,7 +44,7 @@ router.post('/createuser', body('name', 'enter valid name').isLength({ min: 3 })
 
 
 //login endpoint
-router.post('/login', body('email').isEmail(), body('password', 'password cannot be a blank').exists(), async (req, res) => {
+router.post('/login', body('email').isEmail(), body('password').exists(), async (req, res) => {
   const result = validationResult(req);
   
   if (!result.isEmpty()) {
@@ -57,7 +58,7 @@ router.post('/login', body('email').isEmail(), body('password', 'password cannot
       return res.status(400).json({ errors: "Invalid credentials" });
     }
 
-    const match = bcrypt.compare(password, user.password);
+    const match =await bcrypt.compare(password, user.password);
     
     if (!match) {
       return res.status(400).json({ errors: "Invalid credentials" });
@@ -76,5 +77,20 @@ router.post('/login', body('email').isEmail(), body('password', 'password cannot
 })
 
 
+//fetchuser
+
+router.post('/fetchuser',fetchuser, async (req, res) => {
+   
+   try {
+    const userid=await req.user.id;
+    const user=await User.findById(userid).select("-password");
+       res.send(user);
+   } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error"); 
+   }
+   
+
+})
 
 module.exports = router
