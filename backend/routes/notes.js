@@ -63,4 +63,21 @@ router.get('/fetchnotes',fetchuser, async(req, res) => {
       note=await Notes.findByIdAndUpdate(req.params.id,{$set:newnote},{new:true});
       res.send(note);
  })
+
+
+ //delete endpoint
+ router.delete('/deletenotes/:id',fetchuser,async(req,res)=>{
+
+
+   let note=await Notes.findById(req.params.id);
+   if(!note){return res.status(404).send("notes not found")}
+
+   if(note.user.toString()!=req.user.id){
+   return res.status(401).send("you are not allowed to update")
+   }
+   
+    note=await Notes.findByIdAndDelete(req.params.id);
+    res.send(note);
+})
+
 module.exports=router
