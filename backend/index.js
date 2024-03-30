@@ -3,7 +3,7 @@
  connectTomongo()
  
 const app = express()
-const port = 3000
+const port = 5000
 
 app.use(express.json())
 
