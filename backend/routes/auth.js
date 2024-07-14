@@ -11,14 +11,14 @@ const fetchuser=require('../middleware/fetchuser.js');
 //signup endpoint
 router.post('/createuser', body('name', 'enter valid name').isLength({ min: 3 }), body('email').isEmail(), body('password').isLength({ min: 5 }), async (req, res) => {
   const result = validationResult(req);
- 
+ let success=false;
     if (!result.isEmpty()) {
-      return res.send({ errors: result.array(Error) });
+      return res.send({success, errors: result.array(Error) });
     }
     try {
     let user = await User.findOne({ email: req.body.email });
     if (user) {
-      return res.status(400).send({ errors: "user already exists" });
+      return res.status(400).send({ success,errors: "user already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -34,7 +34,8 @@ router.post('/createuser', body('name', 'enter valid name').isLength({ min: 3 })
     }
     const authtok = jwt.sign(data, JWT_SEC);
     // res.send(user)
-    res.send(authtok);
+    success=true
+    res.json({success,authtok});
 
   } catch (error) {
     res.status(500).send(error.message);
@@ -46,7 +47,7 @@ router.post('/createuser', body('name', 'enter valid name').isLength({ min: 3 })
 //login endpoint
 router.post('/login', body('email').isEmail(), body('password').exists(), async (req, res) => {
   const result = validationResult(req);
-  
+  let success=false;
   if (!result.isEmpty()) {
     return res.status(400).json({ errors: result.array() });
   }
@@ -55,20 +56,20 @@ router.post('/login', body('email').isEmail(), body('password').exists(), async 
   try {
     let user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ errors: "Invalid credentials" });
+      return res.status(400).json({success:false, errors: "Invalid credentials" });
     }
 
     const match =await bcrypt.compare(password, user.password);
     
     if (!match) {
-      return res.status(400).json({ errors: "Invalid credentials" });
+      return res.status(400).json({ success:false,errors: "Invalid credentials" });
     } 
 
     const data = {
       id: user.id
     }
     const authtok = jwt.sign(data, JWT_SEC);
-    res.json({ authtok });
+    res.json({success:true, authtok });
   } 
   catch (error) { 
     console.error(error);

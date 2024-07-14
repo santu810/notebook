@@ -1,7 +1,13 @@
 import React from 'react';
 import {Link,useLocation} from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 function Navbar() {
+  let navigate=useNavigate()
+  const logout=()=>{
+    localStorage.removeItem('authtoken');
+    navigate('/login')
+  }
   let location=useLocation();
   React.useEffect(() => {
 
@@ -23,6 +29,15 @@ function Navbar() {
           <Link className={`nav-link ${location.pathname==="/about"? "active":""}`} to="/about">About</Link>
         </li>
       </ul>
+
+      {(!localStorage.getItem('authtoken'))?<div className="position-absolute top-0 end-0">
+        <Link className="btn btn-dark my-2 mx-2" to="/login" role="button">Login</Link>
+        <Link className="btn btn-dark my-2 mx-2" to="/signup" role="button">Signup</Link>
+          </div>:<div className="position-absolute top-0 end-0">
+            <button className='btn btn-dark my-2 mx-2' onClick={logout}>Logout</button></div>
+        }
+        
+        
     </div>
   </div>
 </nav>

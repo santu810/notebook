@@ -2,30 +2,41 @@ import NoteContext from '../context/NoteContext'
 import React, { useContext, useEffect,useRef,useState } from 'react'
 import Noteitem from './Noteitem';
 import Addnote from './Addnote';
+import { useNavigate } from 'react-router-dom';
 
 
 
 
-function Notes() {
+function Notes(props) {
+  let navigate = useNavigate();
   const context = useContext(NoteContext);
-  const { notes, getnote } = context;
-  const [note,setnote]=useState({etitle:"",edescription:"",etag:""})
+  const { notes, getnote,editnote} = context;
+  const [note,setnote]=useState({id:"",etitle:"",edescription:"",etag:""})
   const ref=useRef(null)
+  const refclose=useRef(null);
 
   const updatenote=(currentnote)=>{
       ref.current.click();
-      setnote({etitle:currentnote.title,
+      setnote({id:currentnote._id,etitle:currentnote.title,
     edescription:currentnote.description,
     etag:currentnote.tag})
   }
 
   useEffect(() => {
-    getnote()
+    if(localStorage.getItem('authtoken')){
+    getnote();
+    }
+     else{
+      navigate('/login');
+     }
     // eslint-disable-next-line
   }, []);
 
   const handleclick=(e)=>{
     e.preventDefault();
+    editnote(note.id,note.etitle,note.edescription,note.etag)
+    ref.current.click();
+    props.showalert("Notes updated Succesfully","success");
     
 }
 
@@ -35,7 +46,7 @@ setnote({...note,[e.target.name]:e.target.value})
 
   return (
     <>
-      <Addnote />
+      <Addnote showalert={props.showalert}/>
 
       
 <button ref={ref} type="button" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#exampleModal">
@@ -43,7 +54,7 @@ setnote({...note,[e.target.name]:e.target.value})
 </button>
 
 
-<div className="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div className="modal-dialog">
     <div className="modal-content">
       <div className="modal-header">
@@ -66,7 +77,7 @@ setnote({...note,[e.target.name]:e.target.value})
       </div>
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" className="btn btn-primary" onClick={handleclick}>Save changes</button>
+        <button type="button" ref={refclose} className="btn btn-primary" onClick={handleclick}>Save changes</button>
       </div>
     </div>
   </div>
@@ -74,7 +85,7 @@ setnote({...note,[e.target.name]:e.target.value})
       <div className="row my-3">
         <h2>view notes</h2>
         {notes.map((note) => {
-          return <Noteitem key={note._id} updatenote={updatenote} note={note} />
+          return <Noteitem  key={note._id} showalert={props.showalert} updatenote={updatenote} note={note} />
         })}
       </div>
     </>
