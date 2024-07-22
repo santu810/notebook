@@ -44,7 +44,8 @@ const NoteState = (props) => {
         "auth-token": localStorage.getItem('authtoken')
       },
     });
-   
+    
+    console.log(response);
     const newnotes = notes.filter((note) => { return note._id !== id })
     setnotes(newnotes)
   }
